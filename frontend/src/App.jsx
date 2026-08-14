@@ -1,0 +1,94 @@
+import { useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
+import { setUnauthorizedHandler } from "./api/axios";
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import FriendsList from "./pages/FriendsList";
+import Chat from "./pages/Chat";
+import Settings from "./pages/Settings";
+
+function RequireAuth({ isAuthenticated, children }) {
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+}
+
+export default function App() {
+  const { user, loginUser, logout, updateStoredUser, isAuthenticated } =
+    useAuth();
+
+  // Wire the axios interceptor to the React logout so a 401 never does a
+  // hard page reload — it just clears state and React Router redirects cleanly.
+  useEffect(() => {
+    setUnauthorizedHandler(logout);
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
+
+  return (
+    <div className="app-shell">
+      <Navbar user={user} onLogout={logout} />
+      <div className="app-body">
+        {isAuthenticated && <Sidebar />}
+        <main className="app-main">
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/friends" replace />
+                ) : (
+                  <Login onLogin={loginUser} />
+                )
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                isAuthenticated ? (
+                  <Navigate to="/friends" replace />
+                ) : (
+                  <Register onLogin={loginUser} />
+                )
+              }
+            />
+            <Route
+              path="/friends"
+              element={
+                <RequireAuth isAuthenticated={isAuthenticated}>
+                  <FriendsList />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/chat/:conversationId"
+              element={
+                <RequireAuth isAuthenticated={isAuthenticated}>
+                  <Chat currentUserId={user?.userId} />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth isAuthenticated={isAuthenticated}>
+                  <Settings user={user} onProfileUpdate={updateStoredUser} />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to={isAuthenticated ? "/friends" : "/login"}
+                  replace
+                />
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+    </div>
+  );
+}

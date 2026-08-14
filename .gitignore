@@ -1,0 +1,25 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Java / Maven
+backend/target/
+backend/data/
+*.log
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Env / local overrides
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts
+*.pid

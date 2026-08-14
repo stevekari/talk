@@ -1,0 +1,76 @@
+# Steve Chat
+
+Full-stack real-time chat app: Spring Boot + H2 backend, React (Vite) frontend, JWT auth, WebSocket messaging.
+
+## Project layout
+
+```
+steve-chat/
+├── backend/     Spring Boot app (Java 17, Maven)
+├── frontend/    React app (Vite)
+└── database/    schema.sql — reference schema for MySQL/PostgreSQL
+```
+
+## Running the backend
+
+```
+cd backend
+mvn spring-boot:run
+```
+
+Starts on **http://localhost:8080**. Uses an in-memory H2 database (data resets every restart) — console at `/h2-console` (JDBC URL: `jdbc:h2:mem:stevechat`).
+
+## Running the frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+Starts on **http://localhost:5173**.
+
+## Deploying with Docker
+
+This repo now includes Dockerfiles for both services and a root `docker-compose.yml`.
+
+Build and run everything:
+
+```
+docker compose up --build
+```
+
+Services:
+
+- Frontend: **http://localhost:5173**
+- Backend: **http://localhost:8080**
+
+Important environment variables (set in compose or your platform):
+
+- `VITE_API_URL` (frontend build arg): public backend URL used by REST + WebSocket
+- `APP_CORS_ALLOWED_ORIGINS` (backend): comma-separated allowed frontend origins
+- `JWT_SECRET` (backend): secret used to sign JWTs
+- `PORT` (backend): HTTP port for Spring Boot
+
+Stop containers:
+
+```
+docker compose down
+```
+
+## How it works
+
+1. **Register/Login** → `/auth/register`, `/auth/login` return a JWT, stored in `localStorage`.
+2. **Friends list** → `/users/all` lists every other user. Click one to start (or reopen) a conversation via `/conversations/start`.
+3. **Chat** → history loads once via `GET /conversations/{id}/messages`, then a STOMP-over-SockJS connection to `/ws` subscribes to `/topic/conversation.{id}` for live updates. Sending publishes to `/app/chat.send`; the server saves the message and broadcasts it to both participants.
+4. **Settings** → `PUT /users/me` updates username, avatar URL, and (with current password) the password.
+
+## Moving off H2
+
+When you're ready for a real database, point `application.properties` at MySQL/PostgreSQL and run `database/schema.sql` against it (it has a one-line note for the Postgres identity-column syntax difference). Set `spring.jpa.hibernate.ddl-auto=validate` once the schema is in place.
+
+## Notes
+
+- Controllers talk directly to repositories — no service layer, matching the simple-architecture style used in Steve Forms / Fox Admin.
+- JWT secret in `application.properties` is a dev placeholder — replace it before deploying anywhere real.
+- CORS and WebSocket allowed origins are controlled by `APP_CORS_ALLOWED_ORIGINS`.
