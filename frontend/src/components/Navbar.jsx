@@ -17,7 +17,7 @@ export default function Navbar({ user, onLogout }) {
     <nav className="navbar">
       <Link to="/friends" className="navbar-brand">
         <img
-          src="/src/kari.png"
+          src="/src/assets/steve.jpeg"
           alt="Logo"
           className="navbar-logo"
           width="50"
