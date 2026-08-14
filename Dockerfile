@@ -32,4 +32,6 @@ COPY --from=frontend-build /frontend/dist /app/static/
 EXPOSE 8080
 
 # Use Render's PORT
+ENTRYPOINT ["java", "-jar", "app.jar"]
 ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=$PORT"]
+
