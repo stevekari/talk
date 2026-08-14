@@ -1,8 +1,6 @@
-version: "3.8"
-
 services:
   backend:
-    build: .
+    build: ./backend
     container_name: stevechat-backend
     ports:
       - "8080:8080"
@@ -10,25 +8,23 @@ services:
       PORT: 8080
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stevechat
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 
-      JWT_SECRET: rodriguez
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+      JWT_SECRET: change-this-to-a-64-char-base64-secret-min-32-chars-long
       JWT_EXPIRATION_MS: 86400000
-      FRONTEND_URL: http://localhost:5173
-      APP_CORS_ALLOWED_ORIGINS: http://localhost:3000
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./data:/app/data
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    build: ./frontend
     container_name: stevechat-frontend
     ports:
-      - "3000:3000"
+      - "5173:5173" # Vite default, or 3000:3000 if CRA
     environment:
-      REACT_APP_API_URL: http://localhost:8080
+      VITE_API_URL: http://localhost:8080
     depends_on:
       - backend
 
@@ -42,6 +38,10 @@ services:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p", "rootpassword"]
+      interval: 5s
+      retries: 10
 
 volumes:
   db-data:
