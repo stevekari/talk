@@ -1,12 +1,15 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: stevechat-backend
     ports:
       - "8080:8080"
     environment:
       PORT: 8080
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stevechat
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stevechat?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
       JWT_SECRET: change-this-to-a-64-char-base64-secret-min-32-chars-long
@@ -17,31 +20,38 @@ services:
         condition: service_healthy
     volumes:
       - ./data:/app/data
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: stevechat-frontend
     ports:
-      - "5173:5173" # Vite default, or 3000:3000 if CRA
+      - "5173:5173"
     environment:
       VITE_API_URL: http://localhost:8080
     depends_on:
       - backend
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
     container_name: stevechat-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_HOST: "%"
       MYSQL_DATABASE: stevechat
     ports:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p", "rootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
       interval: 5s
-      retries: 10
+      retries: 20
+      timeout: 5s
+      start_period: 15s
 
 volumes:
   db-data:
