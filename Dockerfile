@@ -18,5 +18,5 @@ RUN mvn -f backend/pom.xml clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=backend-build /workspace/backend/target/*.jar app.jar
-EXPOSE 8080
+EXPOSE 10000
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

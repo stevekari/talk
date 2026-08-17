@@ -1,20 +1,17 @@
-import api from "./axios";
+import api from './axios';
+
+export function getAllUsers() {
+  return api.get('/users/all').then((res) => res.data);
+}
 
 export function searchUsers(query) {
-  if (!query || !query.trim()) return Promise.resolve([]);
-
-  return api
-    .get("/users/search", { params: { q: query }, silentAuth: true })
-    .then((res) => res.data)
-    .catch(() => []);
+  return api.get('/users/search', { params: { query } }).then((res) => res.data);
 }
 
 export function getMe() {
-  return api.get("/users/me").then((res) => res.data);
+  return api.get('/users/me').then((res) => res.data);
 }
 
 export function updateProfile(payload) {
-  return api
-    .put("/users/me", payload, { silentAuth: true })
-    .then((res) => res.data);
+  return api.put('/users/me', payload).then((res) => res.data);
 }

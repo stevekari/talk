@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
-import { setUnauthorizedHandler } from "./api/axios";
+// import { setUnauthorizedHandler } from "./api/axios";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Login from "./pages/Login";
@@ -22,8 +22,8 @@ export default function App() {
   // Wire the axios interceptor to the React logout so a 401 never does a
   // hard page reload — it just clears state and React Router redirects cleanly.
   useEffect(() => {
-    setUnauthorizedHandler(logout);
-    return () => setUnauthorizedHandler(null);
+    // setUnauthorizedHandler(logout);
+    // return () => setUnauthorizedHandler(null);
   }, [logout]);
 
   return (
